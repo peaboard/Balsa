@@ -130,7 +130,8 @@ enumerator = comtypes.CoCreateInstance(
     comtypes.CLSCTX_INPROC_SERVER
 )
 
-
+def minimizeToTray():
+	master.wm_state('iconic')
 
 
 def start_bivalues():
@@ -138,15 +139,13 @@ def start_bivalues():
     delay_time = delay_slider.get()
     reps = rep_slider.get()
 
-
-
-    print enumerator
+    # print enumerator
     endpoint = enumerator.GetDefaultAudioEndpoint( 0, 1 )
-    print endpoint
+    # print endpoint
     volume = endpoint.Activate( IID_IAudioEndpointVolume, comtypes.CLSCTX_INPROC_SERVER, None )
-    print volume
-    print volume.GetMasterVolumeLevel()
-    print volume.GetVolumeRange()
+    # print volume
+    # print volume.GetMasterVolumeLevel()
+    # print volume.GetVolumeRange()
     #volume.SetMasterVolumeLevel(-65, None) uncomment for 0 volume
     #volume.SetMasterVolumeLevel(-1, None) uncomment for full volume
     #volume.SetMasterVolumeLevel(-25, None) #Change the first argument for controlling the volume remember it should be -ve not less than -65
@@ -154,107 +153,87 @@ def start_bivalues():
 
     for x in xrange(0, reps):
 
-        volume.SetChannelVolumeLevel(0,-18,None)
-        volume.SetChannelVolumeLevel(1,-65,None)
+        if (smooth_box.get()) == 0:
 
-        time.sleep(delay_time) 
-        print("Changed")
+            volume.SetChannelVolumeLevel(0,-18,None)
+            volume.SetChannelVolumeLevel(1,-65,None)
 
-        volume.SetChannelVolumeLevel(0,-65,None)
-        volume.SetChannelVolumeLevel(1,-18,None)
+            time.sleep(delay_time) 
+            print("Changed")
+
+            volume.SetChannelVolumeLevel(0,-65,None)
+            volume.SetChannelVolumeLevel(1,-18,None)
 
 
-        time.sleep(delay_time) 
-        print("Rep Done")
+            time.sleep(delay_time) 
+            print("Rep Done")
 
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
+        elif (smooth_box.get()) == 1:
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+            stepIncrement = 5
+            
 
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
+            ch0_volume = -18
+            ch1_volume = -65
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+            while (ch0_volume != -65 and ch1_volume != -18):
 
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
+                volume.SetChannelVolumeLevel(0,ch0_volume,None)
+                volume.SetChannelVolumeLevel(1,ch1_volume,None)
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+                ch0_volume = ch0_volume - stepIncrement
+                ch1_volume = ch1_volume + stepIncrement
 
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
+                if ch0_volume <= -65:
+                    ch0_volume = -65
+                if ch1_volume >= -18:
+                    ch1_volume = -18
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+                time.sleep(0.08)
 
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
+            ch0_volume = -65
+            ch1_volume = -18
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+            time.sleep(1)
 
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+            while (ch1_volume != -65 and ch0_volume != -18):
 
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
+                volume.SetChannelVolumeLevel(0,ch0_volume,None)
+                volume.SetChannelVolumeLevel(1,ch1_volume,None)
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+                ch0_volume = ch0_volume + stepIncrement
+                ch1_volume = ch1_volume - stepIncrement
 
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
+                if ch1_volume <= -65:
+                    ch1_volume = -65
+                if ch0_volume >= -18:
+                    ch0_volume = -18
 
-    # time.sleep(delay_time) 
-    # print("Changed")
+                time.sleep(0.08)
 
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
-
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
-
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
-
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
-
-    # volume.SetChannelVolumeLevel(0,-18,None)
-    # volume.SetChannelVolumeLevel(1,-65,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
-
-    # volume.SetChannelVolumeLevel(0,-65,None)
-    # volume.SetChannelVolumeLevel(1,-18,None)
-
-    # time.sleep(delay_time) 
-    # print("Changed")
+            time.sleep(1)
 
     volume.SetChannelVolumeLevel(0,-20,None)
     volume.SetChannelVolumeLevel(1,-20,None)
   
     print("Done")
+
+# credits - Adam Luchjenbroers, stackoverflow
+def translate(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
+
+# convert user input value(0 to 100) into machine values (0 to -65)
+# def volume_converter:
+
 
 master = Tk()
 
@@ -264,9 +243,10 @@ delay_slider.pack()
 rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
 rep_slider.pack()
 
-var1 = IntVar()
-Checkbutton(master, text="Smooth", variable=var1).pack()
+smooth_box = IntVar()
+Checkbutton(master, text="Smooth", variable=smooth_box).pack()
 Button(master, text='Start', command=start_bivalues).pack()
+Button(master, text='Minimize', command=minimizeToTray).pack()
 
 mainloop()
 
