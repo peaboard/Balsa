@@ -1,4 +1,7 @@
-from Tkinter import *
+#!/usr/bin/env python
+
+from tkinter import *
+import tkinter as tk 
 
 from comtypes import *
 import comtypes.client
@@ -6,6 +9,19 @@ from ctypes import POINTER
 from ctypes.wintypes import DWORD, BOOL
 import time 
 
+
+###########################VARIABLES##################################
+
+initVolume = 0
+
+
+
+
+######################################################################
+
+
+
+# credits - Himanshu dua @ Stackoverflow
 MMDeviceApiLib = \
     GUID('{2FDAAFA3-7523-4F66-9957-9D5E7FE698F6}')
 IID_IMMDevice = \
@@ -138,31 +154,31 @@ def start_bivalues():
 
     delay_time = delay_slider.get()
     reps = rep_slider.get()
-
+    
     # print enumerator
     endpoint = enumerator.GetDefaultAudioEndpoint( 0, 1 )
     # print endpoint
     volume = endpoint.Activate( IID_IAudioEndpointVolume, comtypes.CLSCTX_INPROC_SERVER, None )
-    # print volume
-    # print volume.GetMasterVolumeLevel()
+    initVolume = volume.GetMasterVolumeLevel()
+    #print volume
+    #print volume.GetMasterVolumeLevel()
     # print volume.GetVolumeRange()
     #volume.SetMasterVolumeLevel(-65, None) uncomment for 0 volume
     #volume.SetMasterVolumeLevel(-1, None) uncomment for full volume
     #volume.SetMasterVolumeLevel(-25, None) #Change the first argument for controlling the volume remember it should be -ve not less than -65
 
-
     for x in xrange(0, reps):
 
         if (smooth_box.get()) == 0:
 
-            volume.SetChannelVolumeLevel(0,-18,None)
+            volume.SetChannelVolumeLevel(0,initVolume,None)
             volume.SetChannelVolumeLevel(1,-65,None)
 
             time.sleep(delay_time) 
             print("Changed")
 
             volume.SetChannelVolumeLevel(0,-65,None)
-            volume.SetChannelVolumeLevel(1,-18,None)
+            volume.SetChannelVolumeLevel(1,initVolume,None)
 
 
             time.sleep(delay_time) 
@@ -214,10 +230,11 @@ def start_bivalues():
 
             time.sleep(1)
 
-    volume.SetChannelVolumeLevel(0,-20,None)
-    volume.SetChannelVolumeLevel(1,-20,None)
+    volume.SetChannelVolumeLevel(0,initVolume,None)
+    volume.SetChannelVolumeLevel(1,initVolume,None)
   
     print("Done")
+    print volume.GetMasterVolumeLevel()
 
 # credits - Adam Luchjenbroers, stackoverflow
 def translate(value, leftMin, leftMax, rightMin, rightMax):
@@ -234,19 +251,32 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 # convert user input value(0 to 100) into machine values (0 to -65)
 # def volume_converter:
 
+if __name__ == "__main__":
 
-master = Tk()
+	master = Tk()
 
-delay_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
-delay_slider.pack()
+	button_frame = tk.Frame(master)
+	button_frame.pack(fill=tk.X, side=tk.BOTTOM)
 
-rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
-rep_slider.pack()
+	delay_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
+	delay_slider.pack()
+	delay_slider.set(3)
 
-smooth_box = IntVar()
-Checkbutton(master, text="Smooth", variable=smooth_box).pack()
-Button(master, text='Start', command=start_bivalues).pack()
-Button(master, text='Minimize', command=minimizeToTray).pack()
+	rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
+	rep_slider.pack()
+	rep_slider.set(3)
 
-mainloop()
+	smooth_box = IntVar()
+	Checkbutton(master, text="Smooth", variable=smooth_box).pack()
 
+	start_button = Button(button_frame, text='Start', command=start_bivalues)
+	pause_button = Button(button_frame, text='Pause', command=minimizeToTray)
+	#cycle_button = Button(button_frame, text='Cycle', command=)
+
+	button_frame.columnconfigure(0, weight=1)
+	button_frame.columnconfigure(1, weight=1)
+
+	start_button.grid(row=0, column=1, sticky=tk.W+tk.E)
+	pause_button.grid(row=0, column=0, sticky=tk.W+tk.E)
+
+	mainloop()
