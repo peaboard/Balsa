@@ -16,7 +16,8 @@ import threading
 ###########################VARIABLES##################################
 
 initVolume = 0
-
+toaster = ToastNotifier()
+activeState = False
 
 
 
@@ -149,96 +150,119 @@ enumerator = comtypes.CoCreateInstance(
 	comtypes.CLSCTX_INPROC_SERVER
 )
 
-def minimizeToTray():
+def pauseHandler():
+	global activeState
+	activeState = False
+	print("Paused")
+
+def timeHandler():
+	global activeState
+	activeState = True
 	master.wm_state('iconic')
-
-
-def start_bivalues():
-
-	toaster = ToastNotifier()
-	toaster.show_toast("BALSA","is now running", threaded=True)
-
-	delay_time = freq_slider.get()
-	reps = rep_slider.get()
+	biLateral()
+	#biCaller.start()
 	
-	# print enumerator
-	endpoint = enumerator.GetDefaultAudioEndpoint( 0, 1 )
-	# print endpoint
-	volume = endpoint.Activate( IID_IAudioEndpointVolume, comtypes.CLSCTX_INPROC_SERVER, None )
-	initVolume = volume.GetMasterVolumeLevel()
-	#print volume
-	#print volume.GetMasterVolumeLevel()
-	# print volume.GetVolumeRange()
-	#volume.SetMasterVolumeLevel(-65, None) uncomment for 0 volume
-	#volume.SetMasterVolumeLevel(-1, None) uncomment for full volume
-	#volume.SetMasterVolumeLevel(-25, None) #Change the first argument for controlling the volume remember it should be -ve not less than -65
-
-	for x in xrange(0, reps):
-
-		if (smooth_box.get()) == 0:
-
-			volume.SetChannelVolumeLevel(0,initVolume,None)
-			volume.SetChannelVolumeLevel(1,-65,None)
-
-			time.sleep(delay_time) 
-			print("Changed")
-
-			volume.SetChannelVolumeLevel(0,-65,None)
-			volume.SetChannelVolumeLevel(1,initVolume,None)
 
 
-			time.sleep(delay_time) 
-			print("Rep Done")
+def biLateral():
 
-		elif (smooth_box.get()) == 1:
+	if activeState is True:
 
-			stepIncrement = 5
-			
+		delay_time = delay_slider.get() * 60 
+		biCaller = threading.Timer(delay_time, biLateral)
 
-			ch0_volume = -18
-			ch1_volume = -65
+		toaster.show_toast("BALSA","is now running", icon_path="balsa.ico", threaded=True)
 
-			while (ch0_volume != -65 and ch1_volume != -18):
+		freq_time = freq_slider.get()
+		reps = rep_slider.get()
+		
+		# print enumerator
+		endpoint = enumerator.GetDefaultAudioEndpoint( 0, 1 )
+		# print endpoint
+		volume = endpoint.Activate( IID_IAudioEndpointVolume, comtypes.CLSCTX_INPROC_SERVER, None )
+		initVolume = volume.GetMasterVolumeLevel()
+		#print volume
+		#print volume.GetMasterVolumeLevel()
+		# print volume.GetVolumeRange()
+		#volume.SetMasterVolumeLevel(-65, None) uncomment for 0 volume
+		#volume.SetMasterVolumeLevel(-1, None) uncomment for full volume
+		#volume.SetMasterVolumeLevel(-25, None) #Change the first argument for controlling the volume remember it should be -ve not less than -65
 
-				volume.SetChannelVolumeLevel(0,ch0_volume,None)
-				volume.SetChannelVolumeLevel(1,ch1_volume,None)
+		for x in xrange(0, reps):
 
-				ch0_volume = ch0_volume - stepIncrement
-				ch1_volume = ch1_volume + stepIncrement
+			if (smooth_box.get()) == 0:
 
-				if ch0_volume <= -65:
-					ch0_volume = -65
-				if ch1_volume >= -18:
-					ch1_volume = -18
+				volume.SetChannelVolumeLevel(0,initVolume,None)
+				volume.SetChannelVolumeLevel(1,-65,None)
 
-				time.sleep(0.08)
+				time.sleep(freq_time) 
+				print("Changed")
 
-			ch0_volume = -65
-			ch1_volume = -18
-
-			time.sleep(1)
+				volume.SetChannelVolumeLevel(0,-65,None)
+				volume.SetChannelVolumeLevel(1,initVolume,None)
 
 
-			while (ch1_volume != -65 and ch0_volume != -18):
+				time.sleep(freq_time) 
+				print("Rep Done")
 
-				volume.SetChannelVolumeLevel(0,ch0_volume,None)
-				volume.SetChannelVolumeLevel(1,ch1_volume,None)
+			elif (smooth_box.get()) == 1:
 
-				ch0_volume = ch0_volume + stepIncrement
-				ch1_volume = ch1_volume - stepIncrement
+				stepIncrement = 5
+				
 
-				if ch1_volume <= -65:
-					ch1_volume = -65
-				if ch0_volume >= -18:
-					ch0_volume = -18
+				ch0_volume = -18
+				ch1_volume = -65
 
-				time.sleep(0.08)
+				while (ch0_volume != -65 and ch1_volume != -18):
 
-			time.sleep(1)
+					volume.SetChannelVolumeLevel(0,ch0_volume,None)
+					volume.SetChannelVolumeLevel(1,ch1_volume,None)
 
-	volume.SetChannelVolumeLevel(0,initVolume,None)
-	volume.SetChannelVolumeLevel(1,initVolume,None)
-	print("Done")
+					ch0_volume = ch0_volume - stepIncrement
+					ch1_volume = ch1_volume + stepIncrement
+
+					if ch0_volume <= -65:
+						ch0_volume = -65
+					if ch1_volume >= -18:
+						ch1_volume = -18
+
+					time.sleep(0.08)
+
+				ch0_volume = -65
+				ch1_volume = -18
+
+				time.sleep(1)
+
+
+				while (ch1_volume != -65 and ch0_volume != -18):
+
+					volume.SetChannelVolumeLevel(0,ch0_volume,None)
+					volume.SetChannelVolumeLevel(1,ch1_volume,None)
+
+					ch0_volume = ch0_volume + stepIncrement
+					ch1_volume = ch1_volume - stepIncrement
+
+					if ch1_volume <= -65:
+						ch1_volume = -65
+					if ch0_volume >= -18:
+						ch0_volume = -18
+
+					time.sleep(0.08)
+
+				time.sleep(1)
+
+		volume.SetChannelVolumeLevel(0,initVolume,None)
+		volume.SetChannelVolumeLevel(1,initVolume,None)
+		print(activeState)
+
+		if activeState is True:
+			biCaller.start()
+			print("Continuing...")
+		else:
+			print("Seriously Done")
+
+	else: 
+		print("Program is paused")
 
 # credits - Adam Luchjenbroers, stackoverflow
 def translate(value, leftMin, leftMax, rightMin, rightMax):
@@ -262,21 +286,24 @@ if __name__ == "__main__":
 	button_frame = tk.Frame(master)
 	button_frame.pack(fill=tk.X, side=tk.BOTTOM)
 
-	freq_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="Speed of switching between ears (seconds)")
+	freq_slider = Scale(master, from_=1, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="Speed of switching between ears (seconds)")
 	freq_slider.pack()
-	freq_slider.set(3)
+	freq_slider.set(2)
 
-	rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="How long should it switch (number of times)")
+	rep_slider = Scale(master, from_=1, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="How long should it switch (number of times)")
 	rep_slider.pack()
-	rep_slider.set(3)
+	rep_slider.set(7)
 
+	delay_slider = Scale(master, from_=1, to=60, resolution=1, length=400, orient=HORIZONTAL, label="Time between triggers (minutes)")
+	delay_slider.pack()
+	delay_slider.set(8)
 
 
 	smooth_box = IntVar()
 	Checkbutton(master, text="Smooth", variable=smooth_box).pack()
 
-	start_button = Button(button_frame, text='Start', command=start_bivalues)
-	pause_button = Button(button_frame, text='Pause', command=minimizeToTray)
+	start_button = Button(button_frame, text='Start', command=timeHandler)
+	pause_button = Button(button_frame, text='Pause', command=pauseHandler)
 	#cycle_button = Button(button_frame, text='Cycle', command=)
 
 	button_frame.columnconfigure(0, weight=1)
