@@ -11,6 +11,7 @@ import time
 
 from win10toast import ToastNotifier
 
+import threading
 
 ###########################VARIABLES##################################
 
@@ -148,19 +149,16 @@ enumerator = comtypes.CoCreateInstance(
 	comtypes.CLSCTX_INPROC_SERVER
 )
 
-
-toaster = ToastNotifier()
-
-
 def minimizeToTray():
 	master.wm_state('iconic')
 
 
 def start_bivalues():
 
-	toaster.show_toast("BALSA","is now running")
+	toaster = ToastNotifier()
+	toaster.show_toast("BALSA","is now running", threaded=True)
 
-	delay_time = delay_slider.get()
+	delay_time = freq_slider.get()
 	reps = rep_slider.get()
 	
 	# print enumerator
@@ -240,7 +238,6 @@ def start_bivalues():
 
 	volume.SetChannelVolumeLevel(0,initVolume,None)
 	volume.SetChannelVolumeLevel(1,initVolume,None)
-  
 	print("Done")
 
 # credits - Adam Luchjenbroers, stackoverflow
@@ -265,13 +262,15 @@ if __name__ == "__main__":
 	button_frame = tk.Frame(master)
 	button_frame.pack(fill=tk.X, side=tk.BOTTOM)
 
-	delay_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
-	delay_slider.pack()
-	delay_slider.set(3)
+	freq_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="Speed of switching between ears (seconds)")
+	freq_slider.pack()
+	freq_slider.set(3)
 
-	rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL)
+	rep_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="How long should it switch (number of times)")
 	rep_slider.pack()
 	rep_slider.set(3)
+
+
 
 	smooth_box = IntVar()
 	Checkbutton(master, text="Smooth", variable=smooth_box).pack()
