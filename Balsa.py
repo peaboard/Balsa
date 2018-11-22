@@ -156,7 +156,7 @@ def pauseHandler():
 def timeHandler():
 	global activeState
 	activeState = True
-	toaster.show_toast("BALSA","is now running", threaded=True)
+	toaster.show_toast("BALSA","is now running", icon_path=Logo, threaded=True)
 	master.wm_state('iconic')
 	biLateral()
 	#biCaller.start()
@@ -287,9 +287,23 @@ def translate(value, leftMin, leftMax, rightMin, rightMax):
 # convert user input value(0 to 100) into machine values (0 to -65)
 # def volume_converter:
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 if __name__ == "__main__":
 
 	master = Tk()
+	global Logo
+	Logo = resource_path("balsa.ico")
+	master.iconbitmap(Logo)
+	master.title("balsa")
 
 	button_frame = tk.Frame(master)
 	button_frame.pack(fill=tk.X, side=tk.BOTTOM)
