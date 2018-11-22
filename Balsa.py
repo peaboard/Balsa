@@ -19,8 +19,6 @@ initVolume = 0
 toaster = ToastNotifier()
 activeState = False
 
-
-
 ######################################################################
 
 
@@ -158,6 +156,7 @@ def pauseHandler():
 def timeHandler():
 	global activeState
 	activeState = True
+	toaster.show_toast("BALSA","is now running", threaded=True)
 	master.wm_state('iconic')
 	biLateral()
 	#biCaller.start()
@@ -169,12 +168,19 @@ def biLateral():
 	if activeState is True:
 
 		delay_time = delay_slider.get() * 60 
+
+		if delay_time is 0:
+			delay_time = 0.5
+
 		biCaller = threading.Timer(delay_time, biLateral)
 
-		toaster.show_toast("BALSA","is now running", icon_path="balsa.ico", threaded=True)
-
 		freq_time = freq_slider.get()
+		if freq_time is 0:
+			freq_time = 0.5
+
 		reps = rep_slider.get()
+
+		pause_button.config(text='running', activebackground='yellow', activeforeground='yellow', bg='yellow')
 		
 		# print enumerator
 		endpoint = enumerator.GetDefaultAudioEndpoint( 0, 1 )
@@ -258,8 +264,10 @@ def biLateral():
 		if activeState is True:
 			biCaller.start()
 			print("Continuing...")
+			pause_button.config(text='pause', activebackground='red', activeforeground='white smoke', bg='DarkSeaGreen1')
 		else:
 			print("Seriously Done")
+			pause_button.config(text='pause', activebackground='red', activeforeground='white smoke', bg='red')
 
 	else: 
 		print("Program is paused")
@@ -286,7 +294,7 @@ if __name__ == "__main__":
 	button_frame = tk.Frame(master)
 	button_frame.pack(fill=tk.X, side=tk.BOTTOM)
 
-	freq_slider = Scale(master, from_=1, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="Speed of switching between ears (seconds)")
+	freq_slider = Scale(master, from_=0, to=10, resolution=1, tickinterval=1, length=400, orient=HORIZONTAL, label="Speed of switching between ears (seconds)")
 	freq_slider.pack()
 	freq_slider.set(2)
 
@@ -294,7 +302,7 @@ if __name__ == "__main__":
 	rep_slider.pack()
 	rep_slider.set(7)
 
-	delay_slider = Scale(master, from_=1, to=60, resolution=1, length=400, orient=HORIZONTAL, label="Time between triggers (minutes)")
+	delay_slider = Scale(master, from_=0, to=60, resolution=1, length=400, orient=HORIZONTAL, label="Time between triggers (minutes)")
 	delay_slider.pack()
 	delay_slider.set(8)
 
@@ -303,7 +311,7 @@ if __name__ == "__main__":
 	Checkbutton(master, text="Smooth", variable=smooth_box).pack()
 
 	start_button = Button(button_frame, text='Start', command=timeHandler)
-	pause_button = Button(button_frame, text='Pause', command=pauseHandler)
+	pause_button = Button(button_frame, text='Pause', command=pauseHandler, activebackground='red', activeforeground='white smoke')
 	#cycle_button = Button(button_frame, text='Cycle', command=)
 
 	button_frame.columnconfigure(0, weight=1)
